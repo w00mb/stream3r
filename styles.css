@@ -237,6 +237,7 @@ textarea.FormControl { resize: vertical; }
 .flex-column { flex-direction: column !important; }
 .flex-justify-between { justify-content: space-between !important; }
 .flex-items-center { align-items: center !important; }
+.flex-justify-end { justify-content: flex-end !important; } /* Added */
 .flex-wrap { flex-wrap: wrap !important; }
 
 .gap-1 { gap: var(--space-1) !important; }
