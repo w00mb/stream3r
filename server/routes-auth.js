@@ -24,7 +24,7 @@ router.post('/login', async (req, res) => {
       res.cookie('session_token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', expires });
       res.send(`
         <div id="auth-slot" class="d-flex flex-items-center gap-2">
-          <span class="text-bold">Welcome, ${user.username}</span>
+          <a href="/admin" class="text-bold" style="text-decoration: none; color: inherit;">Welcome, ${user.username}</a>
           <form hx-post="/logout" hx-target="#auth-slot" hx-swap="outerHTML">
             <button class="Button Button--invisible size-small" type="submit">Logout</button>
           </form>

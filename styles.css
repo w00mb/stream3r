@@ -132,6 +132,11 @@ textarea.FormControl { resize: vertical; }
    4. App-specific Styles
    ========================================================================== */
 
+.brand, .brand:visited {
+  color: var(--text);
+  text-decoration: none;
+}
+
 /* Profile */
 .profile-card {
   overflow: hidden; /* For border-radius on image */
