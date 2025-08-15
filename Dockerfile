@@ -30,4 +30,4 @@ COPY --from=builder /usr/src/app/site.db ./site.db
 
 EXPOSE 3000
 
-CMD [ "npm", "start" ]
+CMD [ "node", "server/app.js" ]
