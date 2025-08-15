@@ -5,6 +5,47 @@ const db = require('./db');
 const argon2 = require('argon2');
 const crypto = require('crypto');
 
+/**
+ * @swagger
+ * /login:
+ *   post:
+ *     summary: User login
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/x-www-form-urlencoded:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *                 description: User's username
+ *               password:
+ *                 type: string
+ *                 description: User's password
+ *             required:
+ *               - username
+ *               - password
+ *     responses:
+ *       200:
+ *         description: Successful login, sets session_token cookie. Returns HTML snippet.
+ *         content:
+ *           text/html:
+ *             schema:
+ *               type: string
+ *       401:
+ *         description: Invalid credentials. Returns HTML snippet.
+ *         content:
+ *           text/html:
+ *               type: string
+ *       500:
+ *         description: Server error. Returns HTML snippet.
+ *         content:
+ *           text/html:
+ *             schema:
+ *               type: string
+ */
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
   const user = db.prepare('SELECT * FROM users WHERE username = ?').get(username);
@@ -39,6 +80,21 @@ router.post('/login', async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /logout:
+ *   post:
+ *     summary: User logout
+ *     tags: [Auth]
+ *     description: Clears session_token cookie and deletes session from database.
+ *     responses:
+ *       200:
+ *         description: Successful logout, clears session_token cookie. Returns HTML snippet.
+ *         content:
+ *           text/html:
+ *             schema:
+ *               type: string
+ */
 router.post('/logout', (req, res) => {
   const token = req.cookies.session_token;
   if (token) {
