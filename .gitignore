@@ -1,4 +1,6 @@
 node_modules/
 site.db
+site.db-shm
+site.db-wal
 .DS_Store
 .env

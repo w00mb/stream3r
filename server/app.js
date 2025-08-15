@@ -32,10 +32,13 @@ app.get('/', (req, res) => {
 
 app.get('/admin', (req, res) => {
   // Basic auth check
+  console.log('Admin route hit');
+  console.log('Session token from cookie:', req.cookies.session_token);
   if (!req.cookies.session_token) {
     return res.redirect('/');
   }
   const session = db.prepare('SELECT * FROM sessions WHERE token = ?').get(req.cookies.session_token);
+  console.log('Session from DB:', session);
   if (!session) {
     return res.redirect('/');
   }
