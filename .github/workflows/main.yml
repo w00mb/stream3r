@@ -1,0 +1,38 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18' # Use the same Node.js version as in Dockerfile
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Run tests
+      run: npm test
+
+    - name: Build Docker image
+      run: docker-compose build
+
+    # Future Placeholder for Performance/Load Testing
+    # - name: Run Performance Tests
+    #   run: |
+    #     echo "Placeholder for performance/load tests (e.g., k6, JMeter)"
+
+    # Future Placeholder for Deployment
+    # - name: Deploy to Production
+    # #   run: |
+    # #     echo "Placeholder for deployment steps"

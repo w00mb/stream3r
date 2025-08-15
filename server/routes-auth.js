@@ -43,8 +43,8 @@ router.post('/logout', (req, res) => {
   const token = req.cookies.session_token;
   if (token) {
     db.prepare('DELETE FROM sessions WHERE token = ?').run(token);
+    res.clearCookie('session_token');
   }
-  res.clearCookie('session_token');
   res.send(`
     <div id="auth-slot">
       <form class="auth-inline d-flex flex-items-center gap-2"
