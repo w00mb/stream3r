@@ -1,5 +1,7 @@
 # Your Project Name
 
+![CI/CD Pipeline Status](https://github.com/w00mb/stream3r/actions/workflows/main.yml/badge.svg)
+
 ## Overview
 
 Your Project Name is a bespoke, self-contained web application designed for a digital artist and storyteller. It serves as a personal portfolio and a platform for engaging with an audience, with a strong focus on minimizing third-party dependencies and leveraging the power of SQLite for data storage, analytics, and interactivity.
