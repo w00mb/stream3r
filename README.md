@@ -1,6 +1,15 @@
 # Your Project Name
 
-![CI/CD Pipeline Status](https://github.com/w00mb/stream3r/actions/workflows/main.yml/badge.svg)
+## Project Status & Information
+
+| Category | Details |
+|---|---|
+| **CI/CD Pipeline** | ![CI/CD Pipeline Status](https://github.com/w00mb/stream3r/actions/workflows/main.yml/badge.svg) |
+| **Latest Release** | [View Releases](https://github.com/w00mb/stream3r/releases) |
+| **Code Quality** | (Placeholder for future badge, e.g., Code Climate, SonarCloud) |
+| **License** | [MIT License](LICENSE) |
+| **Maintainers** | [Your Name](https://github.com/w00mb) |
+| **Contributing** | [Contribution Guidelines](CONTRIBUTING.md) |
 
 ## Overview
 
