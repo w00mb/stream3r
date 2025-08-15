@@ -10,6 +10,8 @@ The application is built with a simple and robust stack, designed for easy proto
 
 *   **Public-facing Portfolio:** A clean and elegant interface to showcase the artist's profile, upcoming events, and a social media-style feed.
 *   **Admin Panel:** A secure and intuitive admin panel for managing all aspects of the site, including design tokens, bio, and calendar events.
+*   **Customizable Social Icons:** Option to use custom image URLs for social media buttons, providing more branding flexibility.
+*   **Feed Management:** Admin interface to create and manage feed posts, allowing for dynamic content updates on the public-facing site.
 *   **HTMX-powered Frontend:** A dynamic and responsive user experience with minimal JavaScript, powered by HTMX for partial page loads.
 *   **SQLite-driven:** The entire application is backed by a single SQLite database file, which stores all data, from user accounts to site settings.
 *   **Dockerized Environment:** The application is fully containerized using Docker and Docker Compose, ensuring a portable and sandboxed development environment.

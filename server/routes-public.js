@@ -30,7 +30,12 @@ router.get('/partials/profile', (req, res) => {
         <h2 class="f2 text-semibold">${p.name}</h2>
         <p class="color-fg-muted">${p.bio}</p>
         <nav class="social-links d-flex flex-wrap gap-2">
-          ${socials.map(s => `<a class="Button Button--invisible" href="${s.url || '#'}">${s.label}</a>`).join('')}
+          ${socials.map(s => {
+            const iconHtml = s.use_custom_icon && s.custom_icon_url
+              ? `<img src="${s.custom_icon_url}" alt="${s.label}" style="width: 24px; height: 24px;" />`
+              : s.label;
+            return `<a class="Button Button--invisible" href="${s.url || '#'}">${iconHtml}</a>`;
+          }).join('')}
         </nav>
       </div>
     </div>`);
@@ -63,19 +68,27 @@ router.get('/partials/events', (req, res) => {
     </ul>`);
 });
 
-// (Optional) Feed placeholder
+// Feed from posts table
 router.get('/partials/feed', (req, res) => {
+  const posts = db.prepare('SELECT * FROM posts ORDER BY created_at DESC').all();
   res.type('html').send(`
-    <article class="post">
-      <a class="avatar" href="#"><img src="https://i.pravatar.cc/64?img=5" alt="Avatar" /></a>
-      <div class="post-body">
-        <div class="post-header">
-          <div class="identity"><span class="name text-semibold">K3lly</span><span class="handle color-fg-muted">@k3lly</span></div>
-          <time class="timestamp color-fg-muted">now</time>
+    ${posts.map(post => `
+      <article class="post">
+        <a class="avatar" href="#"><img src="https://i.pravatar.cc/64?img=5" alt="Avatar" /></a>
+        <div class="post-body">
+          <div class="post-header">
+            <div class="identity"><span class="name text-semibold">Admin</span><span class="handle color-fg-muted">@admin</span></div>
+            <time class="timestamp color-fg-muted">${new Date(post.created_at).toLocaleString()}</time>
+          </div>
+          <div class="post-content">
+            <p>${post.content}</p>
+            ${post.image_url ? `<img src="${post.image_url}" alt="Post image" style="max-width: 100%; height: auto; display: block; margin-top: 10px;" />` : ''}
+          </div>
         </div>
-        <div class="post-content"><p>Welcome to the new layout.</p></div>
-      </div>
-    </article>`);
+      </article>
+    `).join('')}
+  `);
 });
+
 
 module.exports = router;

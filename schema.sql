@@ -69,7 +69,9 @@ CREATE TABLE IF NOT EXISTS social_links (
   style TEXT NOT NULL DEFAULT 'brand' CHECK (style IN ('brand','neutral')),
   position INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
-  updated_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP)
+  updated_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
+  custom_icon_url TEXT,
+  use_custom_icon INTEGER NOT NULL DEFAULT 0 CHECK (use_custom_icon IN (0,1))
 ) STRICT;
 CREATE INDEX IF NOT EXISTS idx_social_links_profile_pos ON social_links(profile_id, position);
 
@@ -89,6 +91,18 @@ CREATE TABLE IF NOT EXISTS events (
   UNIQUE(date_iso, title) ON CONFLICT REPLACE
 ) STRICT;
 CREATE INDEX IF NOT EXISTS idx_events_date ON events(date_iso);
+
+-- =========================
+-- Posts (Feed)
+-- =========================
+CREATE TABLE IF NOT EXISTS posts (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  content TEXT NOT NULL,
+  image_url TEXT,
+  created_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
+  updated_at TEXT
+) STRICT;
 
 -- =========================
 -- Auth
@@ -297,7 +311,9 @@ SELECT
       'label', s.label,
       'url', s.url,
       'style', s.style,
-      'position', s.position
+      'position', s.position,
+      'custom_icon_url', s.custom_icon_url,
+      'use_custom_icon', s.use_custom_icon
     )
   ) FILTER (WHERE s.id IS NOT NULL) AS socials_json
 FROM profile p

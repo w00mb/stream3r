@@ -10,7 +10,7 @@
 
   <fieldset class="card-section">
     <legend>Socials</legend>
-    <div class="d-flex gap-2">
+    <div class="d-flex gap-2 flex-wrap">
       <select class="FormControl" name="social_links[0][platform]">
         <option value="twitter" selected>Twitter</option>
         <option value="instagram">Instagram</option>
@@ -24,6 +24,10 @@
         <option value="brand" selected>Brand</option>
         <option value="neutral">Neutral</option>
       </select>
+      <input class="FormControl" name="social_links[0][custom_icon_url]" placeholder="Custom Icon URL (optional)" />
+      <label class="d-flex gap-1 flex-items-center">
+        <input type="checkbox" name="social_links[0][use_custom_icon]" value="1" /> Use Custom Icon
+      </label>
     </div>
   </fieldset>
 

@@ -1,0 +1,19 @@
+<form class="form-grid" hx-post="/admin/posts" hx-target="#feed-status" hx-swap="innerHTML">
+  <fieldset class="card-section">
+    <legend>New Post</legend>
+    <label><span>Content</span><textarea class="FormControl" name="post[content]" rows="4" required></textarea></label>
+    <label><span>Image URL (optional)</span><input class="FormControl" name="post[image_url]" /></label>
+  </fieldset>
+
+  <div class="form-actions">
+    <button class="Button Button--primary" type="submit">Create Post</button>
+  </div>
+  <div id="feed-status" class="p-2 color-fg-muted"></div>
+</form>
+
+<fieldset class="card-section mt-3">
+  <legend>Existing Posts</legend>
+  <div hx-get="/partials/admin/posts-list" hx-trigger="load" hx-swap="innerHTML">
+    Loading posts...
+  </div>
+</fieldset>
