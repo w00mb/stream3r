@@ -27,7 +27,7 @@ jobs:
       run: npm test
 
     - name: Build Docker image
-      run: docker-compose build
+      run: docker compose build
 
     # Future Placeholder for Performance/Load Testing
     # - name: Run Performance Tests
