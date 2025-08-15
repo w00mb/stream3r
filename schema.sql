@@ -1,4 +1,4 @@
--- cuckoldress.club — schema v2
+-- Your Project Name — schema v2
 -- Focus: Auth + advanced SQLite features for analytics and templating readiness.
 
 PRAGMA foreign_keys = ON;
@@ -355,7 +355,7 @@ ON CONFLICT(key) DO NOTHING;
 
 -- Branding
 INSERT INTO site_branding(id, header_title, header_align, footer_text) VALUES
-  (1, 'cuckoldress.club', 'flex-end', '© 2025 Madam K3lly')
+  (1, 'Your Project Name', 'flex-end', '© 2025 Your Name')
 ON CONFLICT(id) DO UPDATE
 SET header_title=excluded.header_title,
     header_align=excluded.header_align,

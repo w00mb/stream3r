@@ -1,8 +1,8 @@
-# cuckoldress.club
+# Your Project Name
 
 ## Overview
 
-cuckoldress.club is a bespoke, self-contained web application designed for a digital artist and storyteller. It serves as a personal portfolio and a platform for engaging with an audience, with a strong focus on minimizing third-party dependencies and leveraging the power of SQLite for data storage, analytics, and interactivity.
+Your Project Name is a bespoke, self-contained web application designed for a digital artist and storyteller. It serves as a personal portfolio and a platform for engaging with an audience, with a strong focus on minimizing third-party dependencies and leveraging the power of SQLite for data storage, analytics, and interactivity.
 
 The application is built with a simple and robust stack, designed for easy prototyping and future migration to a more performant, Rust and WASM-based architecture.
 
