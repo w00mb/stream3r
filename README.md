@@ -69,6 +69,7 @@ docker-compose down
 │       ├── tab-bio.html
 │       ├── tab-calender.html
 │       ├── tab-design.html
+│       ├── tab-feed.html
 │       └── tab-metrics.html
 ├── public
 │   └── htmx.min.js
