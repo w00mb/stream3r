@@ -1,0 +1,34 @@
+<form class="form-grid" hx-post="/admin/profile" hx-target="#bio-status" hx-swap="innerHTML">
+  <fieldset class="card-section">
+    <legend>Profile</legend>
+    <div class="grid-2">
+      <label><span>Name</span><input name="profile[name]" value="Madam K3lly" /></label>
+      <label><span>Image URL</span><input name="profile[image_url]" value="" /></label>
+    </div>
+    <label><span>Bio</span><textarea name="profile[bio]" rows="4"></textarea></label>
+  </fieldset>
+
+  <fieldset class="card-section">
+    <legend>Socials</legend>
+    <div class="links-row">
+      <select name="social_links[0][platform]">
+        <option value="twitter" selected>Twitter</option>
+        <option value="instagram">Instagram</option>
+        <option value="linkedin">LinkedIn</option>
+        <option value="website">Website</option>
+        <option value="custom">Custom</option>
+      </select>
+      <input name="social_links[0][label]" value="Twitter" />
+      <input name="social_links[0][url]" placeholder="https://..." />
+      <select name="social_links[0][style]">
+        <option value="brand" selected>Brand</option>
+        <option value="neutral">Neutral</option>
+      </select>
+    </div>
+  </fieldset>
+
+  <div class="form-actions">
+    <button class="Button Button--primary" type="submit">Save</button>
+  </div>
+  <div id="bio-status" class="p-2 color-fg-muted"></div>
+</form>

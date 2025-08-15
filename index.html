@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Home</title>
+
+  <!-- Core styles -->
+  <link rel="stylesheet" href="/styles.css" />
+
+  <!-- HTMX for partial-loading -->
+  <script src="/public/htmx.min.js" defer></script>
+</head>
+<body class="Site">
+  <header class="Site-header d-flex flex-justify-between flex-items-center p-3">
+    <a class="brand text-semibold f3" href="/">cuckoldress.club</a>
+
+    <!-- Auth slot (swaps to greeting + logout on successful login) -->
+    <div id="auth-slot">
+      <form class="auth-inline d-flex flex-items-center gap-2"
+            hx-post="/login"
+            hx-target="#auth-slot"
+            hx-swap="outerHTML">
+        <input class="FormControl input size-small" name="username" placeholder="Username" required>
+        <input class="FormControl input size-small" type="password" name="password" placeholder="Password" required>
+        <button class="Button Button--primary size-small" type="submit">Login</button>
+      </form>
+    </div>
+  </header>
+
+  <!-- Theme tokens injected from DB -->
+  <div hx-get="/partials/tokens" hx-trigger="load" hx-swap="outerHTML"></div>
+
+  <main class="Site-main container-xl p-3">
+    <!-- Profile -->
+    <section class="Card stack-section" id="profile"
+             aria-labelledby="profile-title"
+             hx-get="/partials/profile"
+             hx-trigger="load"
+             hx-swap="innerHTML">
+      <h2 id="profile-title" class="sr-only">Profile</h2>
+      <div class="p-3 color-fg-muted">Loading profile…</div>
+    </section>
+
+    <!-- Events -->
+    <section class="Card stack-section" id="events"
+             aria-labelledby="events-title"
+             hx-get="/partials/events"
+             hx-trigger="load"
+             hx-swap="innerHTML">
+      <h2 id="events-title" class="sr-only">Events</h2>
+      <div class="p-3 color-fg-muted">Loading events…</div>
+    </section>
+
+    <!-- Feed -->
+    <section class="Card stack-section" id="feed"
+             aria-labelledby="feed-title"
+             hx-get="/partials/feed"
+             hx-trigger="load"
+             hx-swap="innerHTML">
+      <h2 id="feed-title" class="sr-only">Feed</h2>
+      <div class="p-3 color-fg-muted">Loading feed…</div>
+    </section>
+  </main>
+
+  <footer class="Site-footer p-3 color-fg-muted">
+    <small>© <span id="year"></span> cuckoldress.club</small>
+  </footer>
+
+  <script>
+    // Tiny nicety: current year
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Minimal analytics: pageview + dwell
+    (function () {
+      const start = performance.now();
+      const path = location.pathname + location.search;
+      const title = document.title;
+      const referrer = document.referrer;
+
+      function send(event, extra) {
+        const payload = {
+          event, path, title, referrer,
+          ...(extra || {})
+        };
+        const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+        if (!navigator.sendBeacon || !navigator.sendBeacon('/api/track', blob)) {
+          // Fallback if Beacon is unavailable/blocked
+          fetch('/api/track', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), keepalive: true });
+        }
+      }
+
+      // Pageview on load
+      send('pageview');
+
+      // Dwell when leaving or hiding
+      let flushed = false;
+      function flushDwell() {
+        if (flushed) return;
+        flushed = true;
+        const dwell_ms = Math.round(performance.now() - start);
+        send('dwell', { dwell_ms });
+      }
+      addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flushDwell(); });
+      addEventListener('pagehide', flushDwell);
+      addEventListener('beforeunload', flushDwell);
+    })();
+  </script>
+</body>
+</html>

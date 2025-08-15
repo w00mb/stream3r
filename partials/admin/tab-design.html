@@ -1,0 +1,43 @@
+<form class="form-grid"
+      hx-post="/admin/settings"
+      hx-target="#save-status"
+      hx-swap="innerHTML">
+  <fieldset class="card-section">
+    <legend>Design tokens</legend>
+    <div class="grid-2">
+      <label><span>Accent</span>
+        <input name="site_settings[color][--accent]" value="#7c3aed" />
+      </label>
+      <label><span>Card surface</span>
+        <input name="site_settings[color][--card]" value="#ffffff" />
+      </label>
+      <label><span>Text</span>
+        <input name="site_settings[color][--text]" value="#1f2328" />
+      </label>
+      <label><span>Muted</span>
+        <input name="site_settings[color][--muted]" value="#6b7280" />
+      </label>
+      <label><span>Border</span>
+        <input name="site_settings[color][--border]" value="#e5e7eb" />
+      </label>
+      <label><span>Content backdrop</span>
+        <input name="site_settings[color][--content-bg]" value="#000000" />
+      </label>
+    </div>
+  </fieldset>
+
+  <fieldset class="card-section">
+    <legend>Layout</legend>
+    <label class="d-flex gap-1">
+      <input type="radio" name="layout_mode" value="stack" checked /> Stack
+    </label>
+    <label class="d-flex gap-1">
+      <input type="radio" name="layout_mode" value="alt" /> Alt (preview)
+    </label>
+  </fieldset>
+
+  <div class="form-actions">
+    <button class="Button Button--primary" type="submit">Save</button>
+  </div>
+  <div id="save-status" class="p-2 color-fg-muted"></div>
+</form>

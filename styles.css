@@ -1,0 +1,498 @@
+/* ==========================================================================
+   Layout overview and tokens
+   - Shared stylesheet for public and admin pages.
+   - Organized top-to-bottom by the visual flow: header → main/cards → footer → responsive.
+   - Content area uses a black backdrop (future parallax image layer).
+   - Cards are elevated white/ink surfaces over the backdrop.
+   - Vertical rhythm: outer padding vs inner card spacing, adjustable via tokens.
+   ========================================================================== */
+
+/* ===== 1) Theme and base ===== */
+:root {
+  /* Colors */
+  --bg: #f6f7fb;          /* page background behind the black content area */
+  --content-bg: #000000;  /* black backdrop for main content area (swap to image later) */
+  --card: #ffffff;        /* card surfaces */
+  --text: #1f2328;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --accent: #7c3aed;
+  --accent-contrast: #ffffff;
+
+  /* Elevation */
+  --shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+
+  /* Spacing rhythm */
+  --pad-top: 1.5rem;       /* space between header and first card */
+  --pad-bottom: 2.5rem;    /* space between last card and footer */
+  --card-gap: calc((var(--pad-top) + var(--pad-bottom)) / 4); /* ≈ half of outer average */
+
+  /* Horizontal breathing room for each section/card */
+  --section-inset: clamp(0.75rem, 3vw, 1.25rem);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0b0f14;
+    --content-bg: #000000; /* black remains; image swap later */
+    --card: #10161d;
+    --text: #e6edf3;
+    --muted: #9aa4b2;
+    --border: #22303c;
+    --accent: #a78bfa;
+    --accent-contrast: #0b0f14;
+    --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  }
+}
+
+/* Base resets */
+*,
+*::before,
+*::after { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font: 16px/1.55 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+
+  /* Layout mode hook (no visual change by itself) */
+  --layout: stack;
+}
+body.layout--alt { --layout: alt; } /* reserved for future alternate layout */
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0);
+  white-space: nowrap; border: 0;
+}
+
+/* Shared container */
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem 2.75rem;
+}
+
+/* ==========================================================================
+   2) Header (banner)
+   ========================================================================== */
+.site-header {
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+.site-header .container {
+  display: flex;
+  justify-content: flex-end; /* right-align the heading */
+  align-items: center;
+}
+.site-header h1 { margin: 0.5rem 0; }
+
+/* ==========================================================================
+   3) Main content area (black backdrop) and section rhythm
+   ========================================================================== */
+.site-main { background: var(--content-bg); }
+.site-footer { background: var(--card); }
+
+body.layout--stack .site-main,
+body.layout--alt .site-main {
+  /* Outer spacing relative to header/footer */
+  padding-block: var(--pad-top) var(--pad-bottom);
+}
+
+/* The content column that spaces the cards */
+.site-main > .container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--card-gap);                        /* half of outer average spacing */
+}
+
+/* Horizontal inset so cards don’t hug the edges */
+.stack-section { margin-inline: var(--section-inset); }
+
+/* Unify card surfaces and avoid nested background leaks */
+.profile-card,
+.events-panel,
+.social-feed,
+.admin-panel { background: var(--card); }
+.profile-content,
+.events-panel *,
+.social-feed *,
+.admin-panel * { background-color: transparent; }
+
+/* ==========================================================================
+   4) Public: Profile, Events, Social feed
+   ========================================================================== */
+
+/* Profile card */
+.profile-card {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.profile-image {
+  flex: 0 0 340px;
+  position: relative;
+  min-height: 340px;
+  background: #d1d5db;
+}
+.profile-image img {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+}
+.profile-content {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem 1.5rem 1.25rem;
+  gap: 1rem;
+}
+.bio-section h2 {
+  margin: 0 0 0.35rem;
+  font-size: 1.85rem;
+  line-height: 1.2;
+}
+.bio-section p { margin: 0; color: var(--muted); }
+.social-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  margin-top: auto; /* pins links to bottom of card content */
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.55rem 0.9rem;
+  border-radius: 999px;
+  font-weight: 600;
+  text-decoration: none;
+  border: 1px solid var(--border);
+  color: var(--text);
+  background: transparent;
+  transition: background-color 120ms ease, transform 80ms ease, border-color 120ms ease;
+}
+.btn:hover { background: rgba(124, 58, 237, 0.08); border-color: var(--accent); }
+.btn:active { transform: translateY(1px); }
+.btn.small { padding: 0.35rem 0.6rem; font-size: 0.9rem; }
+.btn.primary { background: var(--accent); color: var(--accent-contrast); border-color: var(--accent); }
+.btn.subtle { opacity: 0.8; }
+
+/* Events panel (centered half-width) */
+.events-panel {
+  width: min(50%, 640px);
+  margin-inline: auto;              /* center when not in flex context */
+  align-self: center;               /* center inside flex-column container */
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  padding: 1.25rem;
+}
+.events-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.events-header h2 { margin: 0; font-size: 1.25rem; }
+.calendar-nav { display: flex; gap: 0.5rem; }
+.cal-btn {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  border-radius: 8px;
+  padding: 0.25rem 0.6rem;
+  cursor: pointer;
+}
+.cal-btn:hover { border-color: var(--accent); background: rgba(124,58,237,0.08); }
+.calendar {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.35rem;
+  user-select: none;
+}
+.weekday {
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--muted);
+  text-align: center;
+  padding: 0.35rem 0;
+}
+.day,
+.day.empty {
+  min-height: 40px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+}
+.day { cursor: pointer; }
+.day:hover { border-color: var(--accent); background: rgba(124,58,237,0.08); }
+.day.today { outline: 2px solid var(--accent); outline-offset: 2px; }
+.event-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0; padding: 0; list-style: none;
+}
+.event {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  padding: 0.6rem 0.75rem;
+}
+.event-date {
+  display: grid;
+  place-items: center;
+  width: 52px; height: 52px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(124,58,237,0.06);
+}
+.event-day { font-size: 1.1rem; font-weight: 800; }
+.event-month { font-size: 0.75rem; color: var(--muted); }
+.event-info { display: flex; flex-direction: column; min-width: 0; }
+.event-title { font-weight: 700; }
+.event-meta { color: var(--muted); font-size: 0.9rem; }
+.event-cta {
+  margin-left: auto;
+  border: 1px solid var(--border);
+  padding: 0.4rem 0.7rem;
+  border-radius: 999px;
+  text-decoration: none;
+  color: var(--text);
+}
+.event-cta:hover { border-color: var(--accent); background: rgba(124,58,237,0.08); }
+
+/* Social feed (single cohesive card) */
+.social-feed {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: 0.5rem;
+}
+.post {
+  display: flex;
+  gap: 1rem;
+  padding: 0.9rem 0.75rem;
+}
+.post + .post { border-top: 1px solid var(--border); }
+.avatar {
+  flex: 0 0 64px;
+  display: block;
+  border-radius: 50%;
+  overflow: hidden;
+  align-self: flex-start;
+}
+.avatar img { width: 64px; height: 64px; display: block; object-fit: cover; }
+.post-body {
+  flex: 1 1 auto;
+  display: flex; flex-direction: column; min-width: 0;
+}
+.post-header {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 0.75rem;
+}
+.identity { display: flex; align-items: baseline; gap: 0.5rem; min-width: 0; }
+.name { font-weight: 700; }
+.handle, .timestamp { color: var(--muted); font-size: 0.95rem; }
+.timestamp { white-space: nowrap; }
+.post-content { margin-top: 0.35rem; }
+.post-content p { margin: 0; }
+.post-media { margin-top: 0.6rem; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); }
+.post-media img { display: block; width: 100%; height: auto; }
+.post-actions { display: flex; gap: 0.8rem; margin-top: 0.6rem; }
+.action {
+  padding: 0.45rem 0.75rem; border-radius: 999px; border: 1px solid var(--border);
+  background: transparent; color: var(--text); cursor: pointer; font-weight: 600;
+}
+.action:hover { border-color: var(--accent); background: rgba(124, 58, 237, 0.08); }
+.action:active { transform: translateY(1px); }
+
+/* ==========================================================================
+   5) Admin: Tabs, forms, tables
+   ========================================================================== */
+
+/* Admin panel card */
+.admin-panel {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  padding: 1rem;
+}
+
+/* Tabs control */
+.admin-tabs { display: block; }
+.admin-tabs > input[type="radio"] { position: absolute; left: -9999px; }
+.tab-nav {
+  display: flex; gap: 0.5rem; flex-wrap: wrap;
+  border-bottom: 1px solid var(--border);
+  padding: 0 0.25rem 0.25rem;
+}
+.tab-nav label {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-bottom: none;
+  background: transparent;
+  border-radius: 10px 10px 0 0;
+  cursor: pointer;
+  font-weight: 600;
+}
+#tab-design:checked ~ .tab-nav label[for="tab-design"],
+#tab-bio:checked ~ .tab-nav label[for="tab-bio"],
+#tab-calendar:checked ~ .tab-nav label[for="tab-calendar"],
+#tab-metrics:checked ~ .tab-nav label[for="tab-metrics"] {
+  background: var(--card);
+  border-color: var(--border);
+}
+
+.tab-panel {
+  display: none;
+  padding: 1rem 0.25rem 0.25rem;
+}
+#tab-design:checked ~ .tab-panel[data-panel="design"],
+#tab-bio:checked ~ .tab-panel[data-panel="bio"],
+#tab-calendar:checked ~ .tab-panel[data-panel="calendar"],
+#tab-metrics:checked ~ .tab-panel[data-panel="metrics"] {
+  display: block;
+}
+
+/* Form layout */
+.form-grid { display: grid; gap: 1rem; }
+.card-section {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.9rem;
+}
+.card-section > legend {
+  padding: 0 0.35rem; font-weight: 800; color: var(--text);
+}
+.grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.75rem; }
+
+label > span { display: block; font-weight: 600; margin-bottom: 0.35rem; }
+input[type="text"],
+input[type="url"],
+input[type="date"],
+input[type="number"],
+textarea,
+select {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.55rem 0.65rem;
+  font: inherit;
+  color: var(--text);
+  background: transparent;
+}
+textarea { resize: vertical; }
+.hint { color: var(--muted); font-size: 0.9rem; margin-top: 0.35rem; }
+
+.segmented {
+  display: inline-flex; gap: 0.35rem; border-radius: 999px; padding: 0.2rem;
+  border: 1px solid var(--border);
+}
+.segmented label {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  padding: 0.3rem 0.6rem; border-radius: 999px; cursor: pointer;
+}
+.segmented input { accent-color: var(--accent); }
+
+.order-grid {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.5rem;
+}
+.field-row { margin-bottom: 0.75rem; }
+.field-label { display: block; font-weight: 700; margin-bottom: 0.35rem; }
+
+.links-table .links-head,
+.events-admin-table .events-head {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;
+}
+.links-row,
+.events-row {
+  display: grid; gap: 0.5rem; align-items: center;
+}
+.links-row {
+  grid-template-columns: 1.2fr 2fr 1fr auto;
+  margin-bottom: 0.5rem;
+}
+.events-row {
+  grid-template-columns: 1.2fr 2fr 1.5fr 1fr 2fr auto;
+  margin-bottom: 0.5rem;
+}
+
+.table-like { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.t-head, .t-row {
+  display: grid; grid-template-columns: 1.5fr 1fr 1fr 2fr; gap: 0.5rem;
+}
+.t-head { background: rgba(124,58,237,0.08); font-weight: 700; padding: 0.5rem; }
+.t-row { padding: 0.5rem; border-top: 1px solid var(--border); }
+
+.metrics-grid {
+  display: grid; gap: 0.75rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0.5rem 0 1rem;
+}
+.metric-card {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.8rem;
+}
+.metric-card h3 { margin: 0 0 0.35rem; font-size: 1rem; }
+.metric-value { font-size: 1.4rem; font-weight: 800; }
+
+.form-actions { display: flex; gap: 0.5rem; justify-content: flex-end; }
+
+/* ==========================================================================
+   6) Footer (contentinfo)
+   ========================================================================== */
+.site-footer {
+  border-top: 1px solid var(--border);
+  /* No shadow to keep footer visually lighter than header */
+}
+.site-footer .container { padding-block: 1rem; }
+.site-footer p { margin: 0.5rem 0; }
+
+/* ==========================================================================
+   7) Responsiveness
+   ========================================================================== */
+@media (max-width: 980px) {
+  .container { padding: 2rem 2.25rem; }
+}
+@media (max-width: 860px) {
+  .profile-image { flex-basis: 300px; min-height: 300px; }
+  .metrics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .events-row { grid-template-columns: 1.2fr 2fr 1.5fr 1fr 2fr auto; }
+}
+@media (max-width: 720px) {
+  .profile-card { flex-direction: column; }
+  .profile-image { flex: none; width: 100%; min-height: 280px; }
+  .profile-content { padding: 1.25rem; }
+  .avatar { flex-basis: 56px; }
+  .avatar img { width: 56px; height: 56px; }
+  .post-header { flex-wrap: wrap; row-gap: 0.25rem; }
+  .grid-2 { grid-template-columns: 1fr; }
+  .grid-3 { grid-template-columns: 1fr; }
+  .order-grid { grid-template-columns: 1fr; }
+  .links-row { grid-template-columns: 1fr; }
+  .events-row { grid-template-columns: 1fr; }
+  .metrics-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  .container { padding: 1.5rem 1.25rem; }
+  .stack-section { margin-inline: 0.5rem; } /* keep a comfortable inset on small screens */
+  .events-panel { width: 100%; }            /* center is moot when full-width */
+}

@@ -1,0 +1,66 @@
+<form class="form-grid" hx-post="/admin/events/bulk" hx-target="#calendar-status" hx-swap="innerHTML">
+  <fieldset class="card-section">
+    <legend>Events</legend>
+    <div class="events-admin-table">
+      <div class="events-head">
+        <h3 class="f4 text-semibold m-0">Manage Events</h3>
+        <button class="Button Button--primary size-small" type="button" onclick="addEventRow()">Add Event</button>
+      </div>
+      <div id="events-list">
+        <!-- Event rows will be added here -->
+      </div>
+    </div>
+  </fieldset>
+
+  <div class="form-actions">
+    <button class="Button Button--primary" type="submit">Save Events</button>
+  </div>
+  <div id="calendar-status" class="p-2 color-fg-muted"></div>
+</form>
+
+<script>
+  let eventIndex = 0;
+  function addEventRow(event = {}) {
+    const list = document.getElementById('events-list');
+    const row = document.createElement('div');
+    row.className = 'events-row';
+    row.innerHTML = `
+      <input type="date" name="events[${eventIndex}][date]" value="${event.date_iso || ''}" required>
+      <input type="text" name="events[${eventIndex}][title]" placeholder="Title" value="${event.title || ''}" required>
+      <input type="text" name="events[${eventIndex}][location]" placeholder="Location" value="${event.location || ''}">
+      <input type="text" name="events[${eventIndex}][time]" placeholder="Time" value="${event.time_text || ''}">
+      <input type="url" name="events[${eventIndex}][link]" placeholder="Link" value="${event.link || ''}">
+      <button class="Button Button--danger size-small" type="button" onclick="this.parentElement.remove()">Remove</button>
+    `;
+    list.appendChild(row);
+    eventIndex++;
+  }
+
+  // Load existing events
+  fetch('/partials/events')
+    .then(response => response.text())
+    .then(html => {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+      const events = Array.from(doc.querySelectorAll('.event')).map(el => ({
+        date_iso: el.querySelector('.event-date .event-day')?.
+          parentElement.parentElement.querySelector('.event-date').__HATTRIBUTES['data-date'],
+        title: el.querySelector('.event-title')?.textContent.trim(),
+        location: el.querySelector('.event-meta')?.textContent.trim().split('•')[0].trim(),
+        time_text: el.querySelector('.event-meta')?.textContent.trim().split('•')[1]?.trim(),
+        link: el.querySelector('a')?.href
+      }));
+      
+      // a bit of a hack to get the date from the element, but it works for now
+      const eventElements = Array.from(doc.querySelectorAll('.event'));
+      for (let i = 0; i < events.length; i++) {
+        const day = eventElements[i].querySelector('.event-day').textContent;
+        const month = eventElements[i].querySelector('.event-month').textContent;
+        const year = new Date().getFullYear(); // assume current year
+        const date = new Date(`${month} ${day}, ${year}`);
+        events[i].date_iso = date.toISOString().slice(0, 10);
+      }
+
+      events.forEach(addEventRow);
+    });
+</script>

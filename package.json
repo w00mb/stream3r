@@ -1,0 +1,20 @@
+{
+  "name": "cuckoldress-club",
+  "version": "0.1.0",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server/app.js",
+    "dev": "nodemon server/app.js",
+    "db:init": "node server/init-db.js"
+  },
+  "dependencies": {
+    "argon2": "^0.40.1",
+    "better-sqlite3": "^9.4.0",
+    "cookie-parser": "^1.4.6",
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}
