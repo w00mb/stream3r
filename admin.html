@@ -12,60 +12,66 @@
   <script src="/public/htmx.min.js" defer></script>
 </head>
 <body class="Site">
-  <header class="Site-header d-flex flex-justify-between flex-items-center p-3">
-    <a class="brand text-semibold f3" href="/">cuckoldress.club</a>
-    <nav class="d-flex gap-2">
-      <a class="Button Button--invisible size-small" href="/">View site</a>
-    </nav>
+  <header class="Site-header">
+    <div class="container-xl d-flex flex-justify-between flex-items-center">
+      <a class="brand text-semibold f3" href="/">cuckoldress.club</a>
+      <nav class="d-flex gap-2">
+        <a class="Button Button--invisible size-small" href="/">View site</a>
+      </nav>
+    </div>
   </header>
 
   <!-- Theme tokens injected from DB (so admin reflects live theme) -->
   <div hx-get="/partials/tokens" hx-trigger="load" hx-swap="outerHTML"></div>
 
-  <main class="Site-main container-xl p-3">
-    <!-- Tabs -->
-    <nav class="tab-nav d-flex gap-2 mb-3" aria-label="Admin tabs">
-      <button class="Button Button--invisible"
-              hx-get="/partials/admin/tab-design"
-              hx-target="#admin-tab-body"
-              hx-swap="innerHTML">
-        Design
-      </button>
-      <button class="Button Button--invisible"
-              hx-get="/partials/admin/tab-bio"
-              hx-target="#admin-tab-body"
-              hx-swap="innerHTML">
-        Bio
-      </button>
-      <button class="Button Button--invisible"
-              hx-get="/partials/admin/tab-calender"
-              hx-target="#admin-tab-body"
-              hx-swap="innerHTML">
-        Calendar
-      </button>
-      <button class="Button Button--invisible"
-              hx-get="/partials/admin/tab-metrics"
-              hx-target="#admin-tab-body"
-              hx-swap="innerHTML">
-        Metrics
-      </button>
-    </nav>
+  <main class="Site-main">
+    <div class="container-xl">
+      <!-- Tabs -->
+      <nav class="tab-nav d-flex gap-2 mb-3" aria-label="Admin tabs">
+        <button class="Button Button--invisible"
+                hx-get="/partials/admin/tab-design"
+                hx-target="#admin-tab-body"
+                hx-swap="innerHTML">
+          Design
+        </button>
+        <button class="Button Button--invisible"
+                hx-get="/partials/admin/tab-bio"
+                hx-target="#admin-tab-body"
+                hx-swap="innerHTML">
+          Bio
+        </button>
+        <button class="Button Button--invisible"
+                hx-get="/partials/admin/tab-calender"
+                hx-target="#admin-tab-body"
+                hx-swap="innerHTML">
+          Calendar
+        </button>
+        <button class="Button Button--invisible"
+                hx-get="/partials/admin/tab-metrics"
+                hx-target="#admin-tab-body"
+                hx-swap="innerHTML">
+          Metrics
+        </button>
+      </nav>
 
-    <!-- Tab body -->
-    <section id="admin-tab-body" class="Card p-3">
-      <div class="color-fg-muted">Select a tab…</div>
-    </section>
+      <!-- Tab body -->
+      <section id="admin-tab-body" class="Card p-2">
+        <div class="color-fg-muted">Select a tab…</div>
+      </section>
 
-    <!-- Optional: autoload first tab on page load -->
-    <div class="sr-only"
-         hx-get="/partials/admin/tab-design"
-         hx-trigger="load"
-         hx-target="#admin-tab-body"
-         hx-swap="innerHTML"></div>
+      <!-- Optional: autoload first tab on page load -->
+      <div class="sr-only"
+           hx-get="/partials/admin/tab-design"
+           hx-trigger="load"
+           hx-target="#admin-tab-body"
+           hx-swap="innerHTML"></div>
+    </div>
   </main>
 
-  <footer class="Site-footer p-3 color-fg-muted">
-    <small>Admin</small>
+  <footer class="Site-footer">
+    <div class="container-xl color-fg-muted">
+      <small>Admin</small>
+    </div>
   </footer>
 
   <script>

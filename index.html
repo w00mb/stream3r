@@ -12,59 +12,65 @@
   <script src="/public/htmx.min.js" defer></script>
 </head>
 <body class="Site">
-  <header class="Site-header d-flex flex-justify-between flex-items-center p-3">
-    <a class="brand text-semibold f3" href="/">cuckoldress.club</a>
+  <header class="Site-header">
+    <div class="container-xl d-flex flex-justify-between flex-items-center">
+      <a class="brand text-semibold f3" href="/">cuckoldress.club</a>
 
-    <!-- Auth slot (swaps to greeting + logout on successful login) -->
-    <div id="auth-slot">
-      <form class="auth-inline d-flex flex-items-center gap-2"
-            hx-post="/login"
-            hx-target="#auth-slot"
-            hx-swap="outerHTML">
-        <input class="FormControl input size-small" name="username" placeholder="Username" required>
-        <input class="FormControl input size-small" type="password" name="password" placeholder="Password" required>
-        <button class="Button Button--primary size-small" type="submit">Login</button>
-      </form>
+      <!-- Auth slot (swaps to greeting + logout on successful login) -->
+      <div id="auth-slot">
+        <form class="auth-inline d-flex flex-items-center gap-2"
+              hx-post="/login"
+              hx-target="#auth-slot"
+              hx-swap="outerHTML">
+          <input class="FormControl input size-small" name="username" placeholder="Username" required>
+          <input class="FormControl input size-small" type="password" name="password" placeholder="Password" required>
+          <button class="Button Button--primary size-small" type="submit">Login</button>
+        </form>
+      </div>
     </div>
   </header>
 
   <!-- Theme tokens injected from DB -->
   <div hx-get="/partials/tokens" hx-trigger="load" hx-swap="outerHTML"></div>
 
-  <main class="Site-main container-xl p-3">
-    <!-- Profile -->
-    <section class="Card stack-section" id="profile"
-             aria-labelledby="profile-title"
-             hx-get="/partials/profile"
-             hx-trigger="load"
-             hx-swap="innerHTML">
-      <h2 id="profile-title" class="sr-only">Profile</h2>
-      <div class="p-3 color-fg-muted">Loading profile…</div>
-    </section>
+  <main class="Site-main">
+    <div class="container-xl d-flex flex-column gap-3">
+      <!-- Profile -->
+      <section class="Card" id="profile"
+               aria-labelledby="profile-title"
+               hx-get="/partials/profile"
+               hx-trigger="load"
+               hx-swap="innerHTML">
+        <h2 id="profile-title" class="sr-only">Profile</h2>
+        <div class="p-2 color-fg-muted">Loading profile…</div>
+      </section>
 
-    <!-- Events -->
-    <section class="Card stack-section" id="events"
-             aria-labelledby="events-title"
-             hx-get="/partials/events"
-             hx-trigger="load"
-             hx-swap="innerHTML">
-      <h2 id="events-title" class="sr-only">Events</h2>
-      <div class="p-3 color-fg-muted">Loading events…</div>
-    </section>
+      <!-- Events -->
+      <section class="Card" id="events"
+               aria-labelledby="events-title"
+               hx-get="/partials/events"
+               hx-trigger="load"
+               hx-swap="innerHTML">
+        <h2 id="events-title" class="sr-only">Events</h2>
+        <div class="p-2 color-fg-muted">Loading events…</div>
+      </section>
 
-    <!-- Feed -->
-    <section class="Card stack-section" id="feed"
-             aria-labelledby="feed-title"
-             hx-get="/partials/feed"
-             hx-trigger="load"
-             hx-swap="innerHTML">
-      <h2 id="feed-title" class="sr-only">Feed</h2>
-      <div class="p-3 color-fg-muted">Loading feed…</div>
-    </section>
+      <!-- Feed -->
+      <section class="Card" id="feed"
+               aria-labelledby="feed-title"
+               hx-get="/partials/feed"
+               hx-trigger="load"
+               hx-swap="innerHTML">
+        <h2 id="feed-title" class="sr-only">Feed</h2>
+        <div class="p-2 color-fg-muted">Loading feed…</div>
+      </section>
+    </div>
   </main>
 
-  <footer class="Site-footer p-3 color-fg-muted">
-    <small>© <span id="year"></span> cuckoldress.club</small>
+  <footer class="Site-footer">
+    <div class="container-xl color-fg-muted">
+      <small>© <span id="year"></span> cuckoldress.club</small>
+    </div>
   </footer>
 
   <script>

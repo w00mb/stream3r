@@ -98,6 +98,10 @@ The main tables in the database are:
 *   **`site_settings`**: Stores site-wide settings as key-value pairs.
 *   **`metrics_daily`**: Stores daily analytics data, such as pageviews and unique visitors.
 
+## Versioning
+
+This project adheres to [Semantic Versioning (SemVer)](https://semver.org/spec/v2.0.0.html). The version number is managed in the `package.json` file.
+
 ## Future Work
 
 The application is designed to be a prototype for a more ambitious project. The long-term vision is to migrate the backend to a Rust and WASM-based stack, which will provide significant performance improvements and open up new possibilities for interactivity and real-time features.

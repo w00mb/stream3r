@@ -24,7 +24,7 @@ router.get('/partials/profile', (req, res) => {
   if (!p) return res.type('html').send(`<div class="p-3 color-fg-muted">No profile configured.</div>`);
   const socials = p.socials_json ? JSON.parse(p.socials_json).sort((a,b)=>a.position-b.position) : [];
   res.type('html').send(`
-    <div class="profile-card d-flex">
+    <div class="Card profile-card d-flex">
       <div class="profile-media"><img src="${p.image_url}" alt="Profile portrait"></div>
       <div class="profile-body">
         <h2 class="f2 text-semibold">${p.name}</h2>

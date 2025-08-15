@@ -23,13 +23,13 @@
   function addEventRow(event = {}) {
     const list = document.getElementById('events-list');
     const row = document.createElement('div');
-    row.className = 'events-row';
+    row.className = 'd-flex gap-2 mb-2';
     row.innerHTML = `
-      <input type="date" name="events[${eventIndex}][date]" value="${event.date_iso || ''}" required>
-      <input type="text" name="events[${eventIndex}][title]" placeholder="Title" value="${event.title || ''}" required>
-      <input type="text" name="events[${eventIndex}][location]" placeholder="Location" value="${event.location || ''}">
-      <input type="text" name="events[${eventIndex}][time]" placeholder="Time" value="${event.time_text || ''}">
-      <input type="url" name="events[${eventIndex}][link]" placeholder="Link" value="${event.link || ''}">
+      <input class="FormControl" type="date" name="events[${eventIndex}][date]" value="${event.date_iso || ''}" required>
+      <input class="FormControl" type="text" name="events[${eventIndex}][title]" placeholder="Title" value="${event.title || ''}" required>
+      <input class="FormControl" type="text" name="events[${eventIndex}][location]" placeholder="Location" value="${event.location || ''}">
+      <input class="FormControl" type="text" name="events[${eventIndex}][time]" placeholder="Time" value="${event.time_text || ''}">
+      <input class="FormControl" type="url" name="events[${eventIndex}][link]" placeholder="Link" value="${event.link || ''}">
       <button class="Button Button--danger size-small" type="button" onclick="this.parentElement.remove()">Remove</button>
     `;
     list.appendChild(row);
