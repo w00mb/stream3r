@@ -14,6 +14,7 @@ The application is built with a simple and robust stack, designed for easy proto
 *   **SQLite-driven:** The entire application is backed by a single SQLite database file, which stores all data, from user accounts to site settings.
 *   **Dockerized Environment:** The application is fully containerized using Docker and Docker Compose, ensuring a portable and sandboxed development environment.
 *   **Secure Authentication:** User authentication is handled securely with password hashing using argon2.
+*   **Refactored Stylesheet:** The stylesheet has been refactored for consistency and maintainability, using a modular approach with CSS variables, utility classes, and a reusable `.card` component.
 
 ## Tech Stack
 
@@ -32,6 +33,7 @@ To get the application up and running, you will need to have Docker and Docker C
     ```
 
 2.  **Initialize the database:**
+    This command will run the database initialization script in a temporary container. This only needs to be done once.
     ```bash
     docker-compose run --rm app npm run db:init
     ```
@@ -42,6 +44,11 @@ To get the application up and running, you will need to have Docker and Docker C
     ```
 
 Your application will be available at `http://localhost:3000`.
+
+To stop the application, you can press `Ctrl+C` in the terminal where `docker-compose up` is running, or you can run the following command in another terminal:
+```bash
+docker-compose down
+```
 
 ## Directory Structure
 
