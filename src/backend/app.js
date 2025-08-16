@@ -4,9 +4,9 @@ const cookieParser = require('cookie-parser');
 const path = require('path');
 const db = require('./db');
 
-const publicRoutes = require('./routes-public');
-const adminRoutes = require('./routes-admin');
-const authRoutes = require('./routes-auth');
+const publicRoutes = require('./routes/public');
+const adminRoutes = require('./routes/admin');
+const authRoutes = require('./routes/auth');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -17,8 +17,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 // Static files
-app.use('/public', express.static(path.join(__dirname, '..', 'public')));
-app.use('/styles.css', (req, res) => res.sendFile(path.join(__dirname, '..', 'styles.css')));
+app.use('/public', express.static(path.join(__dirname, '..', '..', 'public')));
+app.use('/styles.css', (req, res) => res.sendFile(path.join(__dirname, '..', '..', 'public', 'css', 'styles.css')));
 
 // Routes
 app.use('/', publicRoutes);
@@ -27,7 +27,7 @@ app.use('/', authRoutes);
 
 // Root handlers for index and admin pages
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'index.html'));
+  res.sendFile(path.join(__dirname, '..', '..', 'src', 'frontend', 'main', 'index.html'));
 });
 
 app.get('/admin', (req, res) => {
@@ -42,7 +42,7 @@ app.get('/admin', (req, res) => {
   if (!session) {
     return res.redirect('/');
   }
-  res.sendFile(path.join(__dirname, '..', 'admin.html'));
+  res.sendFile(path.join(__dirname, '..', '..', 'src', 'frontend', 'admin', 'index.html'));
 });
 
 // Start server

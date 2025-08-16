@@ -4,8 +4,8 @@ const path = require('path');
 const Database = require('better-sqlite3');
 const argon2 = require('argon2');
 
-const dbFile = path.join(__dirname, '..', 'site.db');
-const schemaFile = path.join(__dirname, '..', 'schema.sql');
+const dbFile = path.join(__dirname, '..', '..', '..', 'site.db');
+const schemaFile = path.join(__dirname, 'schema.sql');
 
 async function init() {
   const dbExists = fs.existsSync(dbFile);
