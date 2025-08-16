@@ -10,7 +10,7 @@ PRAGMA temp_store = MEMORY;
 PRAGMA application_id = 710215; -- arbitrary non-zero
 PRAGMA user_version = 2; -- bump when schema changes
 
-BEGIN TRANSACTION;
+
 
 -- =========================
 -- Site-level settings
@@ -351,66 +351,4 @@ SELECT
   END AS dwell_ms_avg
 FROM metrics_daily;
 
--- =========================
--- Seed data (matches current UI)
--- =========================
 
--- Design tokens and layout mode
-INSERT INTO site_settings(key, value) VALUES
-  ('color.--content-bg', '#000000'),
-  ('color.--card', '#ffffff'),
-  ('color.--text', '#1f2328'),
-  ('color.--muted', '#6b7280'),
-  ('color.--border', '#e5e7eb'),
-  ('color.--accent', '#7c3aed'),
-  ('spacing.--pad-top', '1.5rem'),
-  ('spacing.--pad-bottom', '2.5rem'),
-  ('spacing.--section-inset', 'clamp(0.75rem, 3vw, 1.25rem)'),
-  ('layout.mode', 'stack')
-ON CONFLICT(key) DO NOTHING;
-
--- Branding
-INSERT INTO site_branding(id, header_title, header_align, footer_text) VALUES
-  (1, 'Your Project Name', 'flex-end', '© 2025 Your Name')
-ON CONFLICT(id) DO UPDATE
-SET header_title=excluded.header_title,
-    header_align=excluded.header_align,
-    footer_text=excluded.footer_text;
-
--- Section order: Profile → Events → Feed
-INSERT INTO section_order(position, section) VALUES
-  (1, 'profile'),
-  (2, 'events'),
-  (3, 'feed')
-ON CONFLICT(position) DO NOTHING;
-
--- Profile
-INSERT INTO profile(id, name, bio, image_url) VALUES
-  (1, 'Madam K3lly',
-      'Digital artist and storyteller exploring identity, transformation, and the unseen layers of reality. I blend surrealism with tactile textures to build worlds that feel dreamlike yet grounded.',
-      'https://images.unsplash.com/photo-1520813792240-56fc4a3765a7?q=80&w=800&auto=format&fit=crop')
-ON CONFLICT(id) DO UPDATE
-SET name=excluded.name,
-    bio=excluded.bio,
-    image_url=excluded.image_url;
-
--- Social links (ordered)
-INSERT INTO social_links(profile_id, platform, label, url, style, position) VALUES
-  (1, 'twitter',   'Twitter',   '', 'brand',   1),
-  (1, 'instagram', 'Instagram', '', 'brand',   2),
-  (1, 'linkedin',  'LinkedIn',  '', 'brand',   3),
-  (1, 'website',   'Website',   '', 'neutral', 4)
-ON CONFLICT(id) DO NOTHING;
-
--- Events (seed)
-INSERT INTO events(date_iso, title, location, time_text, link) VALUES
-  ('2025-08-22', 'Gallery opening: Veil & Vector',      'Austin, TX', '7:00 PM', ''),
-  ('2025-09-05', 'Live stream: Process & palettes',     'Online',     '1:00 PM CDT', '')
-ON CONFLICT(date_iso, title) DO NOTHING;
-
--- Auth seed (replace password_hash with a real hash via your setup script)
-INSERT INTO users(username, email, password_hash, role) VALUES
-  ('admin', NULL, 'REPLACE_WITH_ARGON2ID_HASH', 'admin')
-ON CONFLICT(username) DO NOTHING;
-
-COMMIT;

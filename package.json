@@ -6,15 +6,16 @@
   "scripts": {
     "start": "node server/app.js",
     "dev": "nodemon server/app.js",
-    "db:init": "node server/init-db.js",
+    "db:init": "node src/backend/db/init.js",
     "test": "jest",
     "swagger:generate": "node generate-swagger.js"
   },
   "dependencies": {
     "argon2": "^0.40.1",
-    "better-sqlite3": "^9.4.0",
     "cookie-parser": "^1.4.6",
-    "express": "^4.19.2"
+    "express": "^4.19.2",
+    "on-finished": "^2.4.1",
+    "sql.js": "^1.13.0"
   },
   "devDependencies": {
     "@semantic-release/changelog": "^6.0.3",

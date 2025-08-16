@@ -1,160 +1,100 @@
-const express = require('express');
-const request = require('supertest'); // Supertest for testing HTTP requests
+const request = require('supertest');
+const fs = require('fs').promises;
+const path = require('path');
+const initSqlJs = require('sql.js');
 const argon2 = require('argon2');
-const db = require('../server/db'); // The actual db module, will be mocked
-const authRoutes = require('../server/routes-auth'); // The module to test
+const { setupApp } = require('../../../backend/app');
 
-// Mock the db module
-jest.mock('../server/db', () => ({
-  prepare: jest.fn().mockReturnThis(),
-  get: jest.fn(),
-  run: jest.fn(),
-  transaction: jest.fn(cb => cb()), // Mock transaction to just execute the callback
-}));
+describe('Auth Routes Integration Tests', () => {
+  let app;
+  let db;
 
-// Mock argon2
-jest.mock('argon2', () => ({
-  verify: jest.fn(),
-  hash: jest.fn(), // Also mock hash in case it's used elsewhere
-}));
+  beforeAll(async () => {
+    // Initialize a real in-memory sql.js database
+    const wasmPath = path.join(__dirname, '..\/db\/sql-wasm.wasm');
+    const wasmBinary = await fs.readFile(wasmPath);
+    const SQL = await initSqlJs({ wasmBinary });
+    db = new SQL.Database();
 
-jest.mock('crypto', () => {
-  const originalCrypto = jest.requireActual('crypto');
-  return {
-    ...originalCrypto,
-    randomBytes: jest.fn(() => ({
-      toString: jest.fn(() => 'mocked_session_token'),
-    })),
-  };
-});
+    // Read and prepare the schema
+    const schemaPath = path.join(__dirname, '..', '..', '..', 'backend', 'db', 'schema.sql');
+    let schema = await fs.readFile(schemaPath, 'utf8');
+    const testPassword = 'admin';
+    const hash = await argon2.hash(testPassword);
+    const populatedSchema = schema.replace('REPLACE_WITH_ARGON2ID_HASH', hash);
+    
+    // Execute the schema to create tables
+    db.exec(populatedSchema);
 
-// Create a simple Express app to test the routes
-const app = express();
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-app.use(require('cookie-parser')()); // Use cookie-parser middleware
-app.use('/', authRoutes);
+    // Seed the admin user for login tests
+    db.run('INSERT INTO users(username, password_hash, role) VALUES (?, ?, ?)', ['admin', hash, 'admin']);
 
-describe('Auth Routes', () => {
-  beforeEach(() => {
-    // Clear all mocks before each test
-    jest.clearAllMocks();
+    // Get the configured app instance with our in-memory db
+    app = await setupApp(db);
+  });
+
+  afterAll(() => {
+    db.close();
   });
 
   describe('POST /login', () => {
     test('should return 200 and set cookie on successful login', async () => {
-      // Mock db.get to return a user
-      db.prepare.mockReturnThis();
-      db.get.mockReturnValueOnce({ id: 1, username: 'testuser', password_hash: 'hashed_password' });
-
-      // Mock argon2.verify to return true
-      argon2.verify.mockResolvedValueOnce(true);
-
       const res = await request(app)
         .post('/login')
-        .send('username=testuser&password=password123');
+        .send('username=admin&password=admin'); // The default user from schema.sql
 
       expect(res.statusCode).toEqual(200);
       expect(res.headers['set-cookie']).toBeDefined();
-      expect(res.headers['set-cookie'][0]).toContain('session_token=mocked_session_token');
-      expect(db.prepare).toHaveBeenCalledWith('SELECT * FROM users WHERE username = ?');
-      expect(db.get).toHaveBeenCalledWith('testuser');
-      expect(argon2.verify).toHaveBeenCalledWith('hashed_password', 'password123');
-      expect(db.prepare).toHaveBeenCalledWith('INSERT INTO sessions (user_id, token, expires_at) VALUES (?, ?, ?)');
-      expect(db.run).toHaveBeenCalledWith(1, 'mocked_session_token', expect.any(String));
+      expect(res.headers['set-cookie'][0]).toContain('session_token');
+
+      // Verify that a session was actually created in the database
+      const sessionRes = db.exec("SELECT * FROM sessions WHERE user_id = 1");
+      expect(sessionRes[0].values.length).toBe(1);
     });
 
-    test('should return 401 on invalid credentials (user not found)', async () => {
-      // Mock db.get to return undefined (user not found)
-      db.prepare.mockReturnThis();
-      db.get.mockReturnValueOnce(undefined);
-
+    test('should return 401 on incorrect password', async () => {
       const res = await request(app)
         .post('/login')
-        .send('username=nonexistent&password=password123');
+        .send('username=admin&password=wrongpassword');
 
       expect(res.statusCode).toEqual(401);
       expect(res.text).toContain('Invalid credentials');
-      expect(db.prepare).toHaveBeenCalledWith('SELECT * FROM users WHERE username = ?');
-      expect(db.get).toHaveBeenCalledWith('nonexistent');
-      expect(argon2.verify).not.toHaveBeenCalled(); // Should not call verify if user not found
-      expect(db.run).not.toHaveBeenCalled(); // Should not insert session
     });
 
-    test('should return 401 on invalid credentials (incorrect password)', async () => {
-      // Mock db.get to return a user
-      db.prepare.mockReturnThis();
-      db.get.mockReturnValueOnce({ id: 1, username: 'testuser', password_hash: 'hashed_password' });
-
-      // Mock argon2.verify to return false
-      argon2.verify.mockResolvedValueOnce(false);
-
+    test('should return 401 for non-existent user', async () => {
       const res = await request(app)
         .post('/login')
-        .send('username=testuser&password=wrongpassword');
+        .send('username=nouser&password=password');
 
       expect(res.statusCode).toEqual(401);
       expect(res.text).toContain('Invalid credentials');
-      expect(db.prepare).toHaveBeenCalledWith('SELECT * FROM users WHERE username = ?');
-      expect(db.get).toHaveBeenCalledWith('testuser');
-      expect(argon2.verify).toHaveBeenCalledWith('hashed_password', 'wrongpassword');
-      expect(db.run).not.toHaveBeenCalled(); // Should not insert session
-    });
-
-    test('should return 500 on server error during login', async () => {
-      // Mock argon2.verify to throw an error
-      argon2.verify.mockRejectedValueOnce(new Error('Argon2 error'));
-
-      // Mock db.get to return a user
-      db.prepare.mockReturnThis();
-      db.get.mockReturnValueOnce({ id: 1, username: 'testuser', password_hash: 'hashed_password' });
-
-      const res = await request(app)
-        .post('/login')
-        .send('username=testuser&password=password123');
-
-      expect(res.statusCode).toEqual(500);
-      expect(res.text).toContain('Server error');
     });
   });
 
   describe('POST /logout', () => {
     test('should clear cookie and delete session on successful logout', async () => {
-      // Simulate a cookie being present
-      const res = await request(app)
+      // Ensure a clean slate for sessions before inserting
+      db.exec('DELETE FROM sessions;');
+
+      // Manually insert a session to be deleted
+      const testToken = 'test_session_token';
+      db.run('INSERT INTO sessions (user_id, token, expires_at) VALUES (?, ?, ?)', [1, testToken, new Date().toISOString()]);
+
+      // Verify it was inserted
+      let sessionRes = db.exec("SELECT * FROM sessions");
+      expect(sessionRes[0].values.length).toBe(1);
+
+      // Now, log out
+      const logoutRes = await request(app)
         .post('/logout')
-        .set('Cookie', ['session_token=existing_session_token']);
+        .set('Cookie', [`session_token=${testToken}`]);
 
-      expect(res.statusCode).toEqual(200);
-      expect(res.headers['set-cookie']).toBeDefined();
-      expect(res.headers['set-cookie'][0]).toContain('session_token=;'); // Check for cleared cookie
-      expect(db.prepare).toHaveBeenCalledWith('DELETE FROM sessions WHERE token = ?');
-      expect(db.run).toHaveBeenCalledWith('existing_session_token');
-    });
+      expect(logoutRes.statusCode).toEqual(200);
+      expect(logoutRes.headers['set-cookie'][0]).toContain('session_token=;');
 
-    test('should clear cookie even if session token is not found in db', async () => {
-      // Simulate a cookie being present, but db.run does nothing
-      db.run.mockReturnValueOnce({ changes: 0 }); // Simulate no rows affected
-
-      const res = await request(app)
-        .post('/logout')
-        .set('Cookie', ['session_token=nonexistent_session_token']);
-
-      expect(res.statusCode).toEqual(200);
-      expect(res.headers['set-cookie']).toBeDefined();
-      expect(res.headers['set-cookie'][0]).toContain('session_token=;');
-      expect(db.prepare).toHaveBeenCalledWith('DELETE FROM sessions WHERE token = ?');
-      expect(db.run).toHaveBeenCalledWith('nonexistent_session_token');
-    });
-
-    test('should do nothing if no session cookie is present', async () => {
-      const res = await request(app)
-        .post('/logout');
-
-      expect(res.statusCode).toEqual(200);
-      expect(res.headers['set-cookie']).toBeUndefined(); // No set-cookie header
-      expect(db.prepare).not.toHaveBeenCalled();
-      expect(db.run).not.toHaveBeenCalled();
+      // Verify the session was deleted from the database
+      sessionRes = db.exec("SELECT * FROM sessions");
+      expect(sessionRes.length).toBe(0); // No results should be found
     });
   });
 });

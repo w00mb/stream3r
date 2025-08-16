@@ -1,10 +1,8 @@
 // server/routes-admin.js
-// Admin partials + mutations (minimal today; expand as you wire each tab).
 const fs = require('fs');
 const path = require('path');
 const express = require('express');
 const router = express.Router();
-const db = require('../db');
 
 const readPartial = name => fs.readFileSync(path.join(__dirname, '..', '..', 'frontend', 'admin', 'partials', name), 'utf8');
 
@@ -26,23 +24,24 @@ router.get('/partials/admin/tab-feed', (req, res) => {
 });
 
 // Save site settings (tokens/layout)
-// Expects nested names like site_settings[color][--accent] in the form.
 router.post('/admin/settings', express.urlencoded({ extended: true }), (req, res) => {
+  const db = req.db;
   try {
+    db.exec('BEGIN TRANSACTION');
     const upsert = db.prepare(`
-    INSERT INTO site_settings(key, value) VALUES(?,?)
-    ON CONFLICT(key) DO UPDATE SET value=excluded.value
-  `);
-    const t = db.transaction(body => {
-      const groups = body.site_settings || {};
-      for (const [group, obj] of Object.entries(groups)) {
-        for (const [k, v] of Object.entries(obj)) upsert.run(`${group}.${k}`, v);
-      }
-      if (body.layout_mode) upsert.run('layout.mode', body.layout_mode);
-    });
-    t(req.body);
+      INSERT INTO site_settings(key, value) VALUES(?,?)
+      ON CONFLICT(key) DO UPDATE SET value=excluded.value
+    `);
+    const groups = req.body.site_settings || {};
+    for (const [group, obj] of Object.entries(groups)) {
+      for (const [k, v] of Object.entries(obj)) upsert.run([`${group}.${k}`, v]);
+    }
+    if (req.body.layout_mode) upsert.run(['layout.mode', req.body.layout_mode]);
+    upsert.free();
+    db.exec('COMMIT');
     res.type('html').send(`<span class="color-fg-muted">Saved ✓</span>`);
   } catch (err) {
+    db.exec('ROLLBACK');
     console.error('Error saving settings:', err);
     res.status(500).send('<span class="color-fg-danger">Error saving settings</span>');
   }
@@ -50,43 +49,41 @@ router.post('/admin/settings', express.urlencoded({ extended: true }), (req, res
 
 // Save profile and social links
 router.post('/admin/profile', express.urlencoded({ extended: true }), (req, res) => {
+  const db = req.db;
   try {
     const profileData = req.body.profile || {};
     const socialLinksData = req.body.social_links || [];
 
-    db.transaction(() => {
-      // Update profile
-      db.prepare(`
-      UPDATE profile
-      SET name = ?, bio = ?, image_url = ?
-      WHERE id = 1
-    `).run(profileData.name, profileData.bio, profileData.image_url);
+    db.exec('BEGIN TRANSACTION');
+    
+    db.run('UPDATE profile SET name = ?, bio = ?, image_url = ? WHERE id = 1', 
+      [profileData.name, profileData.bio, profileData.image_url]
+    );
 
-      // Delete existing social links for profile 1
-      db.prepare('DELETE FROM social_links WHERE profile_id = 1').run();
+    db.run('DELETE FROM social_links WHERE profile_id = 1');
 
-      // Insert new social links
-      const insertSocialLink = db.prepare(`
+    const insertSocialLink = db.prepare(`
       INSERT INTO social_links (profile_id, platform, label, url, style, position, custom_icon_url, use_custom_icon)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `);
-
-      socialLinksData.forEach((link, index) => {
-        insertSocialLink.run(
-          1, // Assuming profile_id is always 1 for now
-          link.platform,
-          link.label,
-          link.url,
-          link.style,
-          index + 1, // Position
-          link.custom_icon_url || null,
-          parseInt(link.use_custom_icon)
-        );
-      });
-    })(); // Immediately invoke the transaction
+    socialLinksData.forEach((link, index) => {
+      insertSocialLink.run([
+        1, // Assuming profile_id is always 1
+        link.platform,
+        link.label,
+        link.url,
+        link.style,
+        index + 1, // Position
+        link.custom_icon_url || null,
+        parseInt(link.use_custom_icon)
+      ]);
+    });
+    insertSocialLink.free();
+    db.exec('COMMIT');
 
     res.type('html').send(`<span class="color-fg-muted">Profile saved ✓</span>`);
   } catch (err) {
+    db.exec('ROLLBACK');
     console.error('Error saving profile:', err);
     res.status(500).send('<span class="color-fg-danger">Error saving profile</span>');
   }
@@ -94,21 +91,27 @@ router.post('/admin/profile', express.urlencoded({ extended: true }), (req, res)
 
 // Create new post
 router.post('/admin/posts', express.urlencoded({ extended: true }), (req, res) => {
+  const db = req.db;
   const postData = req.body.post || {};
-  // For now, assume user_id 1. In a real app, this would come from session/auth.
-  const userId = 1;
+  const userId = 1; // Assume user_id 1 for now
 
-  db.prepare(`
-    INSERT INTO posts (user_id, content, image_url)
-    VALUES (?, ?, ?)
-  `).run(userId, postData.content, postData.image_url || null);
+  db.run('INSERT INTO posts (user_id, content, image_url) VALUES (?, ?, ?)', 
+    [userId, postData.content, postData.image_url || null]
+  );
 
   res.type('html').send(`<span class="color-fg-muted">Post created ✓</span>`);
 });
 
 // List existing posts for admin panel
 router.get('/partials/admin/posts-list', (req, res) => {
-  const posts = db.prepare('SELECT * FROM posts ORDER BY created_at DESC').all();
+  const db = req.db;
+  const stmt = db.prepare('SELECT * FROM posts ORDER BY created_at DESC');
+  const posts = [];
+  while(stmt.step()) {
+    posts.push(stmt.getAsObject());
+  }
+  stmt.free();
+
   res.type('html').send(`
     <ul class="list-group">
       ${posts.map(post => `
@@ -124,28 +127,36 @@ router.get('/partials/admin/posts-list', (req, res) => {
 
 // Bulk save events (simple upserts)
 router.post('/admin/events/bulk', express.urlencoded({ extended: true }), (req, res) => {
+  const db = req.db;
   const rows = req.body.events || [];
-  const stmt = db.prepare(`
-    INSERT INTO events(date_iso, title, location, time_text, link)
-    VALUES(@date, @title, @location, @time_text, @link)
-    ON CONFLICT(date_iso, title) DO UPDATE SET
-      location=excluded.location,
-      time_text=excluded.time_text,
-      link=excluded.link
-  `);
-  const t = db.transaction(values => {
-    (Array.isArray(values) ? values : []).forEach(r => {
+  
+  try {
+    db.exec('BEGIN TRANSACTION');
+    const stmt = db.prepare(`
+      INSERT INTO events(date_iso, title, location, time_text, link)
+      VALUES(@date, @title, @location, @time_text, @link)
+      ON CONFLICT(date_iso, title) DO UPDATE SET
+        location=excluded.location,
+        time_text=excluded.time_text,
+        link=excluded.link
+    `);
+    (Array.isArray(rows) ? rows : []).forEach(r => {
       stmt.run({
-        date: r.date || null,
-        title: r.title || '',
-        location: r.location || null,
-        time_text: r.time || r.time_text || null,
-        link: r.link || null
+        '@date': r.date || null,
+        '@title': r.title || '',
+        '@location': r.location || null,
+        '@time_text': r.time || r.time_text || null,
+        '@link': r.link || null
       });
     });
-  });
-  t(rows);
-  res.type('html').send(`<span class="color-fg-muted">Events saved ✓</span>`);
+    stmt.free();
+    db.exec('COMMIT');
+    res.type('html').send(`<span class="color-fg-muted">Events saved ✓</span>`);
+  } catch (err) {
+    db.exec('ROLLBACK');
+    console.error('Error saving events:', err);
+    res.status(500).send('<span class="color-fg-danger">Error saving events</span>');
+  }
 });
 
 module.exports = router;

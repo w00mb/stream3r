@@ -1,51 +1,93 @@
-// server/app.js
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const path = require('path');
-const db = require('./db');
+const { getDb, saveDb } = require('./db');
+const onFinished = require('on-finished');
 
-const publicRoutes = require('./routes/public');
-const adminRoutes = require('./routes/admin');
-const authRoutes = require('./routes/auth');
+const publicRoutes = require('./features/public/public.routes');
+const adminRoutes = require('./features/admin/admin.routes');
+const authRoutes = require('./features/auth/auth.routes');
 
-const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
-app.use(cookieParser());
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+async function setupApp(dbInstance) {
+  const app = express();
+  const db = dbInstance || await getDb();
 
-// Static files
-app.use('/public', express.static(path.join(__dirname, '..', '..', 'public')));
-app.use('/styles.css', (req, res) => res.sendFile(path.join(__dirname, '..', '..', 'public', 'css', 'styles.css')));
+  // Middleware
+  app.use(cookieParser());
+  app.use(express.urlencoded({ extended: true }));
+  app.use(express.json());
 
-// Routes
-app.use('/', publicRoutes);
-app.use('/', adminRoutes);
-app.use('/', authRoutes);
+  // Middleware to attach db to req
+  app.use((req, res, next) => {
+    req.db = db;
+    next();
+  });
 
-// Root handlers for index and admin pages
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', '..', 'src', 'frontend', 'main', 'index.html'));
-});
+  // Middleware to save db on write operations
+  /* app.use((req, res, next) => {
+    onFinished(res, async () => {
+      if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) {
+        try {
+          await saveDb();
+          console.log('Database saved successfully.');
+        } catch (err) {
+          console.error('Failed to save database:', err);
+        }
+      }
+    });
+    next();
+  }); */
 
-app.get('/admin', (req, res) => {
-  // Basic auth check
-  console.log('Admin route hit');
-  console.log('Session token from cookie:', req.cookies.session_token);
-  if (!req.cookies.session_token) {
-    return res.redirect('/');
-  }
-  const session = db.prepare('SELECT * FROM sessions WHERE token = ?').get(req.cookies.session_token);
-  console.log('Session from DB:', session);
-  if (!session) {
-    return res.redirect('/');
-  }
-  res.sendFile(path.join(__dirname, '..', '..', 'src', 'frontend', 'admin', 'index.html'));
-});
+  // Static files
+  app.use('/public', express.static(path.join(__dirname, '..', '..', 'public')));
+  app.use('/styles.css', (req, res) => res.sendFile(path.join(__dirname, '..', '..', 'public', 'css', 'styles.css')));
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`Server listening on http://localhost:${PORT}`);
-});
+  // Routes
+  app.use('/', publicRoutes);
+  app.use('/', adminRoutes);
+  app.use('/', authRoutes);
+
+  // Root handlers for index and admin pages
+  app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', '..', 'src', 'frontend', 'main', 'index.html'));
+  });
+
+  app.get('/admin', (req, res) => {
+    if (!req.cookies.session_token) {
+      return res.redirect('/');
+    }
+    const stmt = db.prepare('SELECT * FROM sessions WHERE token = ?');
+    stmt.bind([req.cookies.session_token]);
+    let session = null;
+    if (stmt.step()) {
+        session = stmt.getAsObject();
+    }
+    stmt.free();
+
+    if (!session) {
+      return res.redirect('/');
+    }
+    res.sendFile(path.join(__dirname, '..', '..', 'src', 'frontend', 'admin', 'index.html'));
+  });
+
+  return app;
+}
+
+async function startServer() {
+  const app = await setupApp();
+  // Start server
+  app.listen(PORT, () => {
+    console.log(`Server listening on http://localhost:${PORT}`);
+  });
+}
+
+if (require.main === module) {
+  startServer().catch(err => {
+      console.error("Failed to start server:", err);
+      process.exit(1);
+  });
+}
+
+module.exports = { setupApp };

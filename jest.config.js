@@ -4,4 +4,7 @@ module.exports = {
   verbose: true,
   forceExit: true, // Exit Jest after all tests are run
   clearMocks: true, // Clear mock calls and instances between tests
+  globals: {
+    __PROJECT_ROOT__: __dirname,
+  },
 };

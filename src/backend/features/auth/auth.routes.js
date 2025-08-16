@@ -1,54 +1,20 @@
 // server/routes-auth.js
 const express = require('express');
 const router = express.Router();
-const db = require('../db');
 const argon2 = require('argon2');
 const crypto = require('crypto');
 
-/**
- * @swagger
- * /login:
- *   post:
- *     summary: User login
- *     tags: [Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/x-www-form-urlencoded:
- *           schema:
- *             type: object
- *             properties:
- *               username:
- *                 type: string
- *                 description: User's username
- *               password:
- *                 type: string
- *                 description: User's password
- *             required:
- *               - username
- *               - password
- *     responses:
- *       200:
- *         description: Successful login, sets session_token cookie. Returns HTML snippet.
- *         content:
- *           text/html:
- *             schema:
- *               type: string
- *       401:
- *         description: Invalid credentials. Returns HTML snippet.
- *         content:
- *           text/html:
- *               type: string
- *       500:
- *         description: Server error. Returns HTML snippet.
- *         content:
- *           text/html:
- *             schema:
- *               type: string
- */
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
-  const user = db.prepare('SELECT * FROM users WHERE username = ?').get(username);
+  const db = req.db;
+
+  const userStmt = db.prepare('SELECT * FROM users WHERE username = ?');
+  userStmt.bind([username]);
+  let user = null;
+  if (userStmt.step()) {
+    user = userStmt.getAsObject();
+  }
+  userStmt.free();
 
   if (!user) {
     return res.status(401).send('<div class="auth-inline color-fg-danger">Invalid credentials</div>');
@@ -60,7 +26,7 @@ router.post('/login', async (req, res) => {
       const expires = new Date();
       expires.setHours(expires.getHours() + 24);
 
-      db.prepare('INSERT INTO sessions (user_id, token, expires_at) VALUES (?, ?, ?)').run(user.id, token, expires.toISOString());
+      db.run('INSERT INTO sessions (user_id, token, expires_at) VALUES (?, ?, ?)', [user.id, token, expires.toISOString()]);
 
       res.cookie('session_token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', expires });
       res.send(`
@@ -80,25 +46,10 @@ router.post('/login', async (req, res) => {
   }
 });
 
-/**
- * @swagger
- * /logout:
- *   post:
- *     summary: User logout
- *     tags: [Auth]
- *     description: Clears session_token cookie and deletes session from database.
- *     responses:
- *       200:
- *         description: Successful logout, clears session_token cookie. Returns HTML snippet.
- *         content:
- *           text/html:
- *             schema:
- *               type: string
- */
 router.post('/logout', (req, res) => {
   const token = req.cookies.session_token;
   if (token) {
-    db.prepare('DELETE FROM sessions WHERE token = ?').run(token);
+    req.db.run('DELETE FROM sessions WHERE token = ?', [token]);
     res.clearCookie('session_token');
   }
   res.send(`
