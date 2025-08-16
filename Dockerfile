@@ -11,6 +11,7 @@ RUN apk add --no-cache python3 build-base
 RUN npm install
 
 COPY . .
+RUN node server/init-db.js
 
 # Stage 2: Runner
 FROM node:18-alpine AS runner
