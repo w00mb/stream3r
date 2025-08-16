@@ -1,7 +1,7 @@
 // server/routes-public.js
 const express = require('express');
 const router = express.Router();
-const db = require('./db');
+const db = require('../db');
 
 // Tokens → CSS variables in a <style> block (hydrated from v_site_tokens)
 router.get('/partials/tokens', (req, res) => {

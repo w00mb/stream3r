@@ -4,9 +4,9 @@
 
 | Category | Details |
 |---|---|
-| **CI/CD Pipeline** | ![CI/CD Pipeline Status](https://github.com/w00mb/stream3r/actions/workflows/main.yml/badge.svg) |
-| **Latest Release** | [View Releases](https://github.com/w00mb/stream3r/releases) |
-| **Code Quality** | (Placeholder for future badge, e.g., Code Climate, SonarCloud) |
+| **CI/CD Pipeline** | ![CI/CD Status](https://github.com/w00mb/stream3r/actions/workflows/main.yml/badge.svg) |
+| **Latest Release** | [Releases](https://github.com/w00mb/stream3r/releases) |
+| **Stack Badges** | ![Node.js](https://img.shields.io/badge/Node.js-6DA55F?logo=node.js&logoColor=white) ![Express.js](https://img.shields.io/badge/Express.js-%23404d59.svg?logo=express&logoColor=%2361DAFB) ![SQLite](https://img.shields.io/badge/sqlite-%2307405e.svg?style=for-the-badge&logo=sqlite&logoColor=white) ![HTMX](https://img.shields.io/badge/HTMX-blue?logo=htmx&logoColor=white) ![Argon2](https://img.shields.io/badge/Argon2-blue) ![Jest](https://img.shields.io/badge/Jest-C21325?logo=jest&logoColor=white) ![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white) |
 | **License** | [MIT License](LICENSE) |
 | **Maintainers** | [Your Name](https://github.com/w00mb) |
 | **Contributing** | [Contribution Guidelines](CONTRIBUTING.md) |
@@ -27,7 +27,6 @@ The application is built with a simple and robust stack, designed for easy proto
 *   **SQLite-driven:** The entire application is backed by a single SQLite database file, which stores all data, from user accounts to site settings.
 *   **Dockerized Environment:** The application is fully containerized using Docker and Docker Compose, ensuring a portable and sandboxed development environment.
 *   **Secure Authentication:** User authentication is handled securely with password hashing using argon2.
-*   **Refactored Stylesheet:** The stylesheet has been refactored for consistency and maintainability, using a modular approach with CSS variables, utility classes, and a reusable `.card` component.
 
 ## Tech Stack
 
@@ -69,60 +68,66 @@ docker-compose down
 .
 ├── .dockerignore
 ├── .gitignore
-├── Dockerfile
-├── admin.html
+├── .releaserc.json
+├── CONTRIBUTING.md
 ├── docker-compose.yml
-├── index.html
-├── package.json
+├── Dockerfile
+├── generate-swagger.js
+├── jest.config.js
+├── LICENSE
 ├── package-lock.json
-├── partials
-│   └── admin
-│       ├── tab-bio.html
-│       ├── tab-calender.html
-│       ├── tab-design.html
-│       ├── tab-feed.html
-│       └── tab-metrics.html
-├── public
-│   └── htmx.min.js
-├── schema.sql
-├── server
-│   ├── app.js
-│   ├── db.js
-│   ├── init-db.js
-│   ├── routes-admin.js
-│   ├── routes-auth.js
-│   └── routes-public.js
-└── styles.css
+├── package.json
+├── POLICY.md
+├── README.md
+├── ROADMAP.md
+├── swaggerDef.js
+├── .github/
+│   └── workflows/
+│       └── main.yml
+├── node_modules/
+├── public/
+│   ├── css/
+│   │   └── styles.css
+│   ├── js/
+│   │   └── htmx.min.js
+│   └── images/
+├── src/
+│   ├── backend/
+│   │   ├── config/
+│   │   ├── db/
+│   │   │   ├── index.js
+│   │   │   ├── init.js
+│   │   │   └── schema.sql
+│   │   ├── middleware/
+│   │   ├── routes/
+│   │   │   ├── admin.js
+│   │   │   ├── auth.js
+│   │   │   └── public.js
+│   │   ├── services/
+│   │   ├── utils/
+│   │   └── app.js
+│   ├── frontend/
+│   │   ├── admin/
+│   │   │   ├── index.html
+│   │   │   └── partials/
+│   │   │       ├── tab-bio.html
+│   │   │       ├── tab-calender.html
+│   │   │       ├── tab-design.html
+│   │   │       ├── tab-feed.html
+│   │   │       └── tab-metrics.html
+│   │   ├── main/
+│   │   │   └── index.html
+│   │   └── components/
+│   └── tests/
+│       ├── backend/
+│       │   ├── routes/
+│       │   │   ├── admin.test.js
+│       │   │   └── auth.test.js
+│       │   └── db/
+│       │       └── db.test.js
+│       └── frontend/
 ```
-
-## Primitives Contract
-
-The application is built around a set of core data primitives, which represent the main entities in the system. These primitives are defined in the `schema.sql` file and are the foundation of the application's data model.
-
-*   **`Profile`**: Represents the artist's profile, including their name, bio, and image.
-*   **`SocialLink`**: Represents a link to a social media profile or website.
-*   **`Event`**: Represents an upcoming event, such as a gallery opening or a live stream.
-*   **`User`**: Represents a user account with authentication credentials.
-*   **`SiteSetting`**: Represents a key-value pair for site-wide settings, such as design tokens.
-
-## Database Structure
-
-The database schema is defined in the `schema.sql` file and is designed to be both simple and powerful. It leverages SQLite's features, such as foreign key constraints, triggers, and views, to maintain data integrity and simplify application logic.
-
-The main tables in the database are:
-
-*   **`profile`**: Stores the artist's profile information.
-*   **`social_links`**: Stores the social media links associated with the profile.
-*   **`events`**: Stores the upcoming events.
-*   **`users`**: Stores user accounts and their hashed passwords.
-*   **`sessions`**: Stores user session information for authentication.
-*   **`site_settings`**: Stores site-wide settings as key-value pairs.
-*   **`metrics_daily`**: Stores daily analytics data, such as pageviews and unique visitors.
 
 ## Versioning
 
 This project adheres to [Semantic Versioning (SemVer)](https://semver.org/spec/v2.0.0.html). The version number is managed in the `package.json` file.
-
-## Future Work
-
-The application is designed to be a prototype for a more ambitious project. The long-term vision is to migrate the backend to a Rust and WASM-based stack, which will provide significant performance improvements and open up new possibilities for interactivity and real-time features.

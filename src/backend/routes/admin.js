@@ -4,9 +4,9 @@ const fs = require('fs');
 const path = require('path');
 const express = require('express');
 const router = express.Router();
-const db = require('./db');
+const db = require('../db');
 
-const readPartial = name => fs.readFileSync(path.join(__dirname, '..', 'partials', 'admin', name), 'utf8');
+const readPartial = name => fs.readFileSync(path.join(__dirname, '..', '..', 'frontend', 'admin', 'partials', name), 'utf8');
 
 // Tab partials (lazy-loaded)
 router.get('/partials/admin/tab-design', (req, res) => {
