@@ -3,6 +3,12 @@ const fs = require('fs');
 const path = require('path');
 const express = require('express');
 const router = express.Router();
+const { authenticateAdmin } = require('../middleware/auth.middleware'); // Added auth middleware
+
+// Admin root handler
+router.get('/admin', authenticateAdmin, (req, res) => {
+  res.sendFile(path.join(__dirname, '..', '..', '..', 'frontend', 'admin', 'index.html'));
+});
 
 const readPartial = name => fs.readFileSync(path.join(__dirname, '..', '..', 'frontend', 'admin', 'partials', name), 'utf8');
 

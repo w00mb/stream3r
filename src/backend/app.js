@@ -3,12 +3,12 @@ const cookieParser = require('cookie-parser');
 const path = require('path');
 const { getDb, saveDb } = require('./db');
 const onFinished = require('on-finished');
+const helmet = require('helmet'); // Added helmet
 
 const publicRoutes = require('./features/public/public.routes');
 const adminRoutes = require('./features/admin/admin.routes');
 const authRoutes = require('./features/auth/auth.routes');
-
-const PORT = process.env.PORT || 3000;
+const { port } = require('./config');
 
 async function setupApp(dbInstance) {
   const app = express();
@@ -18,6 +18,7 @@ async function setupApp(dbInstance) {
   app.use(cookieParser());
   app.use(express.urlencoded({ extended: true }));
   app.use(express.json());
+  app.use(helmet()); // Use Helmet for security headers
 
   // Middleware to attach db to req
   app.use((req, res, next) => {
@@ -26,7 +27,7 @@ async function setupApp(dbInstance) {
   });
 
   // Middleware to save db on write operations
-  /* app.use((req, res, next) => {
+  app.use((req, res, next) => {
     onFinished(res, async () => {
       if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) {
         try {
@@ -38,38 +39,22 @@ async function setupApp(dbInstance) {
       }
     });
     next();
-  }); */
+  });
 
   // Static files
   app.use('/public', express.static(path.join(__dirname, '..', '..', 'public')));
-  app.use('/styles.css', (req, res) => res.sendFile(path.join(__dirname, '..', '..', 'public', 'css', 'styles.css')));
 
   // Routes
   app.use('/', publicRoutes);
   app.use('/', adminRoutes);
   app.use('/', authRoutes);
 
-  // Root handlers for index and admin pages
-  app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', '..', 'src', 'frontend', 'main', 'index.html'));
-  });
+  
 
-  app.get('/admin', (req, res) => {
-    if (!req.cookies.session_token) {
-      return res.redirect('/');
-    }
-    const stmt = db.prepare('SELECT * FROM sessions WHERE token = ?');
-    stmt.bind([req.cookies.session_token]);
-    let session = null;
-    if (stmt.step()) {
-        session = stmt.getAsObject();
-    }
-    stmt.free();
-
-    if (!session) {
-      return res.redirect('/');
-    }
-    res.sendFile(path.join(__dirname, '..', '..', 'src', 'frontend', 'admin', 'index.html'));
+  // Global Error Handler
+  app.use((err, req, res, next) => {
+    console.error(err.stack); // Log the error stack for debugging
+    res.status(500).send('Internal Server Error'); // Send a generic error response
   });
 
   return app;
@@ -78,8 +63,8 @@ async function setupApp(dbInstance) {
 async function startServer() {
   const app = await setupApp();
   // Start server
-  app.listen(PORT, () => {
-    console.log(`Server listening on http://localhost:${PORT}`);
+  app.listen(port, () => {
+    console.log(`Server listening on http://localhost:${port}`);
   });
 }
 

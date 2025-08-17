@@ -13,7 +13,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
-        persist-credentials: false # This is important for semantic-release to push tags
+        persist-credentials: false
 
     - name: Set up Node.js
       uses: actions/setup-node@v4
@@ -42,33 +42,7 @@ jobs:
     # #   run: |
     # #     echo "Placeholder for deployment steps"
 
-  release: # New job for Semantic Release
-    needs: build # Ensure release runs only after build passes
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master' # Only run on master branch pushes
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        persist-credentials: false # This is important for semantic-release to push tags
-
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-
-    - name: Install dependencies
-      run: npm install
-
-    - name: Run Semantic Release
-      run: npx semantic-release
-      env:
-        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }} # GitHub token for creating releases/tags
-        NPM_TOKEN: ${{ secrets.NPM_TOKEN }} # NPM token (optional, but good practice)
-
   deploy: # New job for Deployment
-    needs: release # Ensure deployment runs only after release is created
     runs-on: ubuntu-latest
     environment: production # Use a GitHub Environment for protection rules (e.g., manual approval)
 

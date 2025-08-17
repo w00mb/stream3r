@@ -14,16 +14,13 @@
     "argon2": "^0.40.1",
     "cookie-parser": "^1.4.6",
     "express": "^4.19.2",
+    "helmet": "^7.1.0",
     "on-finished": "^2.4.1",
     "sql.js": "^1.13.0"
   },
   "devDependencies": {
-    "@semantic-release/changelog": "^6.0.3",
-    "@semantic-release/git": "^10.0.1",
-    "@semantic-release/github": "^9.2.6",
     "jest": "^30.0.5",
     "nodemon": "^3.0.2",
-    "semantic-release": "^22.0.12",
     "supertest": "^7.1.4",
     "swagger-jsdoc": "^6.2.8"
   }
