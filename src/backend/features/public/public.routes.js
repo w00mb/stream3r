@@ -5,7 +5,7 @@ const path = require('path'); // Added path
 
 // Root handler for index page
 router.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', '..', '..', 'src', 'frontend', 'main', 'index.html'));
+  res.sendFile(path.join(__dirname, '../../src/frontend/main/index.html'));
 });
 
 // Tokens → CSS variables in a <style> block (hydrated from v_site_tokens)
@@ -28,8 +28,7 @@ router.get('/partials/tokens', (req, res) => {
     .replace(/^layout\./, '--');
 
   const css = `:root{
-${lines.join('\n')}
-}`;
+${lines.join('\n')}\n}`;
   res.type('html').send(`<style>${css}</style>`);
 });
 

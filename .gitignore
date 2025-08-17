@@ -4,3 +4,4 @@ site.db-shm
 site.db-wal
 .DS_Store
 .env
+GEMINI.md

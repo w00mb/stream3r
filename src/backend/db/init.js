@@ -20,7 +20,7 @@ async function init() {
   
   try {
     const [SQL, schema] = await Promise.all([
-      initSqlJs({ locateFile: file => path.join(__dirname, '..', '..', '..', 'node_modules', 'sql.js', 'dist', file) }),
+      initSqlJs({ locateFile: file => path.join(process.cwd(), 'node_modules', 'sql.js', 'dist', file) }),
       fs.readFile(schemaFile, 'utf8')
     ]);
 
